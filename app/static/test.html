@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extractor de Reportes Solares - TEST</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .test-section {
+            border: 2px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>TEST - Carga de PDFs</h1>
+
+    <div class="test-section">
+        <h2>Prueba 1: Un solo archivo</h2>
+        <input type="file" id="single-file" accept=".pdf">
+        <button onclick="testSingleFile()">Probar 1 archivo</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Prueba 2: Múltiples archivos</h2>
+        <input type="file" id="multiple-files" accept=".pdf" multiple>
+        <button onclick="testMultipleFiles()">Probar múltiples archivos</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        async function testSingleFile() {
+            const fileInput = document.getElementById('single-file');
+            if (!fileInput.files.length) {
+                alert('Selecciona un archivo PDF');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('files', fileInput.files[0]);
+
+            await sendRequest(formData);
+        }
+
+        async function testMultipleFiles() {
+            const fileInput = document.getElementById('multiple-files');
+            if (!fileInput.files.length) {
+                alert('Selecciona al menos un archivo PDF');
+                return;
+            }
+
+            const formData = new FormData();
+            for (let file of fileInput.files) {
+                formData.append('files', file);
+            }
+
+            await sendRequest(formData);
+        }
+
+        async function sendRequest(formData) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Procesando...';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    resultDiv.innerHTML = `<strong>Error ${response.status}:</strong><br>${JSON.stringify(result, null, 2)}`;
+                } else {
+                    resultDiv.innerHTML = `<strong>Éxito!</strong><br><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+
+</html>
